@@ -4,6 +4,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-void qsort(void *arr, size_t len, size_t size, int (*cmp)(const void *, const void *));
+void quickSort(void *arr, size_t len, size_t size, int (*cmp)(const void *, const void *));
 
 #endif
