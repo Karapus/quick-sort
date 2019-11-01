@@ -3,12 +3,12 @@
 #include <string.h>
 #include <assert.h>
 
-void swap(void *a, void *b, size_t size)
+void swap(void *a, void *b, void *tmp, size_t size)
 {
 	assert(a);
 	assert(b);
+	assert(tmp);
 	
-	static void *tmp = malloc(size);
 	memcpy(tmp, a, 	size);
 	memcpy(a,   b, 	size);
 	memcpy(b, tmp, 	size);
@@ -19,14 +19,14 @@ int intCmp(const void *a, const void *b)
 	return *((const int *)a) - *((const int *)b);
 }
 
-void qsort(void *arr, size_t len, size_t size, int (*cmp)(const void *, const void *))
+static void partition(void *arr, size_t len, size_t size, void *tmp, int (*cmp)(const void *, const void *))
 {
 	assert(arr);
 	assert(size);
 
 	if (len <= 1) return;
 
-	swap((char *)arr + size * (rand() % len), arr, size);
+	swap((char *)arr + size * (rand() % len), arr, tmp, size);
 	char *cur_l = (char *)arr + size;
 	char *cur_r = (char *)arr + size * (len - 1);
 	
@@ -36,13 +36,21 @@ void qsort(void *arr, size_t len, size_t size, int (*cmp)(const void *, const vo
 		else if (cmp(cur_r, arr) > 0) cur_r -= size;
 		else 
 		{
-			swap(cur_l, cur_r, size);
+			swap(cur_l, cur_r, tmp, size);
 			cur_l += size, cur_r -= size;
 		}
 	}
 	
-	return 	qsort(arr, (cur_r - (char *)arr) / size + 1, size, cmp),
-		qsort(cur_l, len - (cur_l - (char *)arr) / size, size, cmp);
+	return 	partition(arr, (cur_r - (char *)arr) / size + 1, size, tmp, cmp),
+		partition(cur_l, len - (cur_l - (char *)arr) / size, size, tmp, cmp);
+}
+
+void qsort(void *arr, size_t len, size_t size, int (*cmp)(const void *, const void *))
+{
+	void *tmp = malloc(size);
+	partition(arr, len, size, tmp, cmp);
+	free(tmp);
+	return;
 }
 
 int main()
@@ -56,4 +64,6 @@ int main()
 	for (size_t i = 0; i < len; printf("%d, ", a[i++]))
 		;
 	putchar('\n');
+	free(a);
+	return 0;
 }
